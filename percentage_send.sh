@@ -1,9 +1,9 @@
 #!/bin/bash
-
 # (c) Decker, 2018
 # (c) mrlynch, 2019
+#
 # Don't edit unless you know what you're doing
-# Only thing you need to worry about is config.json; edit that - see config.json.example
+# Only thing you need to worry about is percentage_config.json; edit that - see percentage_config.json.example
 
 cd "${BASH_SOURCE%/*}" || exit
 
@@ -24,18 +24,18 @@ fi
 
 source ~/.komodo/komodo.conf
 
-if [ ! -f config.json ]; then
-  echo -e "${RED}Error: config.json not found in $(pwd)${RESET}"
+if [ ! -f percentage_config.json ]; then
+  echo -e "${RED}Error: percentage_config.json not found in $(pwd)${RESET}"
   exit 0
 fi
 
-beneficiaries=$(cat config.json | jq -r '.beneficiaries')
-changeAddress=$(cat config.json | jq -r '.change')
+beneficiaries=$(cat percentage_config.json | jq -r '.beneficiaries')
+changeAddress=$(cat percentage_config.json | jq -r '.change')
 donees=($(echo ${beneficiaries} | jq -r 'keys_unsorted | .[]'))
-curlport=$(cat config.json | jq -r '.curlport')
+curlport=$(cat percentage_config.json | jq -r '.curlport')
 
-echo -e 'KMD SendMany Script v0.1alpha (c) '${MAGENTA}mrlynch${RESET}, 2019
-echo    '================================================'
+echo -e 'KMD Percentage SendMany Script v0.1alpha (c) '${MAGENTA}mrlynch${RESET}, 2019
+echo    '=========================================================='
 
 curl -s --user $rpcuser:$rpcpassword --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "listunspent", "params": [0, 9999999]}' -H 'content-type: text/plain;' http://127.0.0.1:$curlport/ | jq .result > createrawtx.txt
 
@@ -52,8 +52,9 @@ echo -e 'Balance: '${GREEN}$balance${RESET}
 
 for don in "${donees[@]}"; do
   address=$(echo ${beneficiaries} | jq -r .\"${don}\".address)
-  amount=$(echo ${beneficiaries} | jq -r .\"${don}\".amount)
-  echo -e "Address ${BLUE}${don}${RESET}: $address\t\tamount: ${GREEN}$amount${RESET}"
+  pct=$(echo ${beneficiaries} | jq -r .\"${don}\".percentage)
+  amount=$(echo "scale=8; $pct/100*$balance" | bc -l | sed 's/^\./0./')
+  echo -e ${BLUE}${don}${RESET}" address: $address\t\tpercentage: "${GREEN}$pct${RESET}'\t\tamount: '${GREEN}$amount${RESET}
   totalsend=$(echo "scale=8; ($totalsend+$amount)" | bc -l | sed 's/^\./0./')
   if [ "${don}" == "${donees[-1]}" ]; then
     addresses=$(echo ${addresses}'"'${address}'"': $amount)
@@ -64,13 +65,10 @@ done
 
 change=$(echo "scale=8; ($balance-$totalsend)/1*1" | bc -l | sed 's/^\./0./')
 
-# check for change bigger than 0.001 - if you have 0.00000003 you won't be able to send
+# check for change bigger than 0.1 - if you have 0.00000003 you won't be able to send
 if (( $(echo "$change > 0.001" | bc -l) )); then
   addresses=$(echo ${addresses}', "'${changeAddress}'"': $change'}')
   echo -e "Change: ${GREEN}$change${RESET}"
-elif (( $(echo "$change < 0" | bc -l) )); then
-  echo -e "${RED}Insufficient balance. Please load more funds or adjust amounts in config.json\nFunds to load: $change${RESET}"
-  exit 0
 else
   addresses=$(echo ${addresses}'}')
   echo -e "Change: ${GREEN}$change${RESET}"

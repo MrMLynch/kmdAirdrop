@@ -1,0 +1,14 @@
+{
+  "change": "RLYNCH776dMWchBDWr1westDDXwT7C2nxV",
+  "curlport": 7771,
+  "beneficiaries": {
+      "1": {
+        "address": "RLYNCH776dMWchBDWr1westDDXwT7C2nxV",
+        "percentage": 42.77
+    },
+      "2": {
+        "address": "RBAX5wJmu3VzR7iPyb5wxAdrqvgwn5y43z",
+        "percentage": 33
+    }
+  }
+}
