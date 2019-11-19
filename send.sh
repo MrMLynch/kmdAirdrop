@@ -51,9 +51,9 @@ totalsend=0
 echo -e 'Balance: '${GREEN}$balance${RESET}
 
 for don in "${donees[@]}"; do
-  address=$(echo ${beneficiaries} | jq -r .${don}.address)
-  amount=$(echo ${beneficiaries} | jq -r .${don}.amount)
-  echo -e ${BLUE}${don}${RESET}" address: $address\t\tamount: "${GREEN}$amount${RESET}
+  address=$(echo ${beneficiaries} | jq -r .\"${don}\".address)
+  amount=$(echo ${beneficiaries} | jq -r .\"${don}\".amount)
+  echo -e "Address ${BLUE}${don}${RESET}: $address\t\tamount: ${GREEN}$amount${RESET}"
   totalsend=$(echo "scale=8; ($totalsend+$amount)" | bc -l | sed 's/^\./0./')
   if [ "${don}" == "${donees[-1]}" ]; then
     addresses=$(echo ${addresses}'"'${address}'"': $amount)
@@ -74,7 +74,6 @@ elif (( $(echo "$change < 0" | bc -l) )); then
 else
   addresses=$(echo ${addresses}'}')
   echo -e "Change: ${GREEN}$change${RESET}"
-else
 fi
 
 
