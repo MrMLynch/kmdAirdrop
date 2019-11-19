@@ -11,9 +11,12 @@
 - sufficient funds loaded
 
 ### Edit config.json.example and change name to config.json
-- addresses must be unique
+- addresses and indexes must be unique
+- set change address to an address you control as any leftovers will be sent there
 
-### Once script is run copy the signed txid and broadcast in any insight explorer
+### Run script with ./send.sh
+
+### Once script has finished copy the signed tx and broadcast in any KMD insight explorer
 - [Dexstats.info](http://kmd.explorer.dexstats.info/tx/send)
 - [Kmdexplorer.ru](https://kmdexplorer.ru/tx/send)
 - [Kmdexplorer.io](https://kmdexplorer.io/tx/send)
